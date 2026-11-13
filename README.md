@@ -95,6 +95,7 @@ Exit codes: `0` ok, `2` budget refused, `3` Gemini call failed (incl. quota exha
 
 - Hard monthly cap (default **$15**), daily soft cap (**$2**, Claude must ask you before passing it), and a monthly Google-search query cap (**4,500**, inside Google's 5,000/month free search quota for Gemini 3+). Search queries usually run out before dollars do.
 - `audit` and `background` also have a per-run cap (`--max-cost`, default $0.50 / $1.50); when a cap is hit the run stops and still reports what it finished.
+- The model is `gemini-3.8-flash` by default. Set `GEMINI_MODEL=gemini-4-hydrogen` in `config.env` to switch; only models with a price table in `scripts/common.py` are accepted. In one measured low-effort scout (2026-11-13) Hydrogen took the same time and cost about 3-6x more.
 - Costs are computed conservatively from the `usage` block of each response and written to `~/.gemini-research/ledger.jsonl`.
 - Queries, claims and audited reports are sent to Google. `SKILL.md` tells Claude to describe topics in public, generic terms and never to send unpublished results, private code or draft text. Only public URLs can be read; there is deliberately no way to upload local files (except a report you pass to `audit`).
 - Calls use `store=false`. OpenReview and some publishers block automated access; the skill reports those as *could not check* and never tries to get past bot checks.

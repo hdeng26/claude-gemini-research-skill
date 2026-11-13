@@ -115,3 +115,7 @@ General:
 (stays inside Google's 5,000/month free search quota; it runs out before the dollar cap,
 so prefer `low` for scout). Costs are computed conservatively from token usage. Token prices
 double on 2027-01-01. Do not edit these values unless the user asks.
+
+Model: `gemini-3.8-flash` by default; `GEMINI_MODEL=gemini-4-hydrogen` in config.env switches it
+(measured 2026-11-13: same speed, ~3-6x the cost per low scout). Only models with a price table
+in `scripts/common.py` are accepted. Do not switch models unless the user asks.

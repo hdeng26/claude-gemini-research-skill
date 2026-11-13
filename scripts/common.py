@@ -35,19 +35,28 @@ DEFAULTS = {
 # month_spend + reserve would pass the monthly cap. Re-tune after real runs.
 RESERVE_USD = {"low": 0.05, "medium": 0.10, "high": 0.20}  # measured max so far: $0.07 (compare, medium)
 
-# Prices per 1M tokens, Standard tier, from the Gemini API pricing page
-# (checked 2026-11-11). Token prices double on 2027-01-01.
-PRICE_TABLE = [
-    # (valid_from, input, output_incl_thinking, cached_input)
-    (dt.date(2000, 1, 1), 0.75, 3.75, 0.075),
-    (dt.date(2027, 1, 1), 1.50, 7.50, 0.15),
-]
+# Prices per 1M tokens, Standard tier, from the Gemini API pricing page (checked 2026-11-13).
+# model -> [(valid_from, input, output_incl_thinking, cached_input)]
+PRICE_TABLES = {
+    "gemini-3.8-flash": [(dt.date(2000, 1, 1), 0.75, 3.75, 0.075),
+                         (dt.date(2027, 1, 1), 1.50, 7.50, 0.15)],  # doubles on 2027-01-01
+    "gemini-4-hydrogen": [(dt.date(2000, 1, 1), 1.50, 7.50, 0.075)],
+}
 SEARCH_PRICE_PER_QUERY = 14 / 1000  # only past the free quota; see ledger notes
 
 
-def prices(today: dt.date | None = None):
+def model() -> str:
+    """Model id: GEMINI_MODEL in config.env / environment, else MODEL. Must have a price table."""
+    m = load_config().get("GEMINI_MODEL") or MODEL
+    if m not in PRICE_TABLES:
+        raise BudgetError(f"no price table for model {m!r}; add it to PRICE_TABLES in common.py "
+                          f"(known: {', '.join(PRICE_TABLES)})")
+    return m
+
+
+def prices(today: dt.date | None = None, model_id: str | None = None):
     today = today or dt.date.today()
-    row = [r for r in PRICE_TABLE if r[0] <= today][-1]
+    row = [r for r in PRICE_TABLES[model_id or model()] if r[0] <= today][-1]
     return {"input": row[1], "output": row[2], "cached": row[3]}
 
 
@@ -60,13 +69,13 @@ def load_config() -> dict:
                 continue
             k, v = line.split("=", 1)
             cfg[k.strip()] = v.strip().strip('"').strip("'")
-    for k in list(DEFAULTS) + ["GEMINI_API_KEY"]:
+    for k in list(DEFAULTS) + ["GEMINI_API_KEY", "GEMINI_MODEL"]:
         if os.environ.get(k):
             cfg[k] = os.environ[k]
     return cfg
 
 
-def cost_usd(usage: dict, today: dt.date | None = None) -> float:
+def cost_usd(usage: dict, today: dt.date | None = None, model_id: str | None = None) -> float:
     """Conservative cost of one interaction from its `usage` block.
 
     The docs do not say whether total_output_tokens already includes thought
@@ -74,7 +83,7 @@ def cost_usd(usage: dict, today: dt.date | None = None) -> float:
     added separately. This can only overestimate, which is the safe direction
     for a budget.
     """
-    p = prices(today)
+    p = prices(today, model_id)
     u = usage or {}
     cached = u.get("total_cached_tokens") or 0
     inp = max((u.get("total_input_tokens") or 0) - cached, 0)

@@ -165,7 +165,7 @@ def interact(prompt: str, *, effort: str, label: str, tools=("google_search", "u
                         expected_queries=10 if "google_search" in tools else 0)
 
     body = {
-        "model": common.MODEL,
+        "model": common.model(),
         "input": prompt,
         "generation_config": {"thinking_level": effort},
         "store": False,
@@ -206,7 +206,7 @@ def interact(prompt: str, *, effort: str, label: str, tools=("google_search", "u
     out["cost_usd"] = round(common.cost_usd(out["usage"]), 5)
     out["attempts"] = attempts
     common.record_spend({
-        "label": label, "effort": effort, "model": common.MODEL,
+        "label": label, "effort": effort, "model": common.model(),
         "cost_usd": out["cost_usd"], "search_queries": out["search_query_count"],
         "input_tokens": out["usage"].get("total_input_tokens"),
         "output_tokens": out["usage"].get("total_output_tokens"),

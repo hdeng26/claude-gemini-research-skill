@@ -66,7 +66,7 @@ def do_scout(topic: str, effort: str, max_papers: int = 10, allow_over_daily: bo
     claimed = (data.get("papers") or [])[: max_papers]
     checked = validate.validate_papers(claimed, parsed)
     result = {
-        "mode": "scout", "topic": topic, "effort": effort, "model": common.MODEL,
+        "mode": "scout", "topic": topic, "effort": effort, "model": common.model(),
         "run_dir": str(run),
         "cost_usd": round(sum(c["cost_usd"] for c in calls), 5),
         "search_queries_issued": parsed["search_queries"],

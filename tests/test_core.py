@@ -34,12 +34,12 @@ def test_extract_json_fenced_fallback():
 # ---------- cost & budget -------------------------------------------------
 def test_cost_is_conservative_and_price_doubles_2027():
     u = {"total_input_tokens": 1_000_000, "total_output_tokens": 1_000_000, "total_thought_tokens": 0}
-    assert common.cost_usd(u, dt.date(2026, 11, 11)) == pytest.approx(0.75 + 3.75)
-    assert common.cost_usd(u, dt.date(2027, 1, 2)) == pytest.approx(1.50 + 7.50)
+    assert common.cost_usd(u, dt.date(2026, 11, 11), "gemini-3.8-flash") == pytest.approx(0.75 + 3.75)
+    assert common.cost_usd(u, dt.date(2027, 1, 2), "gemini-3.8-flash") == pytest.approx(1.50 + 7.50)
     # thought and tool tokens are added on top (overestimate rather than under)
     u2 = {"total_input_tokens": 0, "total_output_tokens": 0, "total_thought_tokens": 1_000_000,
           "total_tool_use_tokens": 1_000_000}
-    assert common.cost_usd(u2, dt.date(2026, 11, 11)) == pytest.approx(3.75 + 0.75)
+    assert common.cost_usd(u2, dt.date(2026, 11, 11), "gemini-3.8-flash") == pytest.approx(3.75 + 0.75)
 
 
 def test_monthly_cap_refuses(isolated_home):
@@ -267,3 +267,21 @@ def test_arxiv_by_id_falls_back_to_openalex(monkeypatch):
     monkeypatch.setattr(scholar, "openalex_by_doi", lambda d: {"source": "openalex", "title": "T", "doi": d, "url": None})
     rec = scholar.arxiv_by_id("1605.02026")
     assert rec["arxiv_id"] == "1605.02026" and rec["doi"] == "10.48550/arxiv.1605.02026"
+
+
+def test_model_from_config_and_prices(isolated_home, monkeypatch):
+    assert common.model() == common.MODEL
+    (isolated_home / "config.env").write_text("GEMINI_API_KEY=k\nGEMINI_MODEL=gemini-4-hydrogen\n")
+    assert common.model() == "gemini-4-hydrogen"
+    assert common.prices(dt.date(2026, 11, 13)) == {"input": 1.5, "output": 7.5, "cached": 0.075}
+    calls = _queue(monkeypatch, [raw_response("ok")])
+    gemini_client.interact("p", effort="low", label="t")
+    assert calls[0]["model"] == "gemini-4-hydrogen"
+
+
+def test_unknown_model_refused_before_any_call(isolated_home, monkeypatch):
+    (isolated_home / "config.env").write_text("GEMINI_API_KEY=k\nGEMINI_MODEL=gemini-99\n")
+    calls = _queue(monkeypatch, [raw_response("ok")])
+    with pytest.raises(common.BudgetError, match="no price table"):
+        gemini_client.interact("p", effort="low", label="t")
+    assert calls == []

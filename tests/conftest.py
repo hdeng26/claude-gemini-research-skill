@@ -16,7 +16,7 @@ def isolated_home(tmp_path, monkeypatch):
     monkeypatch.setattr(common, "LEDGER", tmp_path / "ledger.jsonl")
     monkeypatch.setattr(common, "RUNS", tmp_path / "runs")
     monkeypatch.setattr(common, "CACHE", tmp_path / "cache")
-    for k in ("MONTHLY_CAP_USD", "DAILY_SOFT_CAP_USD", "MONTHLY_SEARCH_QUERY_CAP", "GEMINI_API_KEY"):
+    for k in ("MONTHLY_CAP_USD", "DAILY_SOFT_CAP_USD", "MONTHLY_SEARCH_QUERY_CAP", "GEMINI_API_KEY", "GEMINI_MODEL"):
         monkeypatch.delenv(k, raising=False)
     monkeypatch.delenv("GEMINI_RESEARCH_FAKE", raising=False)
     (tmp_path / "config.env").write_text("GEMINI_API_KEY=test-not-real\n")

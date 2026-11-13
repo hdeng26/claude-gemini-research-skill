@@ -41,7 +41,7 @@ def cmd_budget(a) -> int:
     print(json.dumps({**s, "monthly_cap_usd": float(cfg["MONTHLY_CAP_USD"]),
                       "daily_soft_cap_usd": float(cfg["DAILY_SOFT_CAP_USD"]),
                       "monthly_search_query_cap": int(cfg["MONTHLY_SEARCH_QUERY_CAP"]),
-                      "prices_per_1M": common.prices(),
+                      "model": common.model(), "prices_per_1M": common.prices(),
                       "api_key_configured": bool(cfg.get("GEMINI_API_KEY"))}, indent=2))
     return 0
 
