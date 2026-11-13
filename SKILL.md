@@ -19,12 +19,12 @@ ${CLAUDE_SKILL_DIR}/.venv/bin/python ${CLAUDE_SKILL_DIR}/scripts/research.py <su
 
 | subcommand | what it does | default effort | measured (2026-11-11) |
 |---|---|---|---|
-| `scout "<topic>" [--max-papers 10]` | Gemini expands the topic into several Google queries and returns candidate papers; each is checked against arXiv/Crossref/OpenAlex | low | low 30 s $0.008 ~8 queries; medium 90 s $0.03 ~17 queries |
-| `read <src> [--focus "question"]` | fetches the paper's public full text, Gemini extracts method / optimization / setup / evidence / limitations (+ your focus question), each with a quote checked against the text | medium | 35 s, $0.03 |
-| `verify "<claim>" [--source <src>]... [--max-sources 3]` | tests a claim. With `--source`, reads those papers; without, searches for up to 3 sources (incl. ones that might refute) and reads them. Verdict: supported / contradicted / conflicting / insufficient | low | 10 s $0.01 with 1 source; 40 s $0.03 with search |
-| `compare <src> <src> [...] [--dim "dimension"]...` | 2-6 papers side by side; each cell quote-checked against its own paper | medium | 60 s, $0.07 for 3 papers |
-| `audit <report file> [--max-claims 40] [--max-cost 0.5]` | checks a deep-research report (e.g. exported from the Gemini app as .md/.pdf/.txt/.html) against its own cited sources: references checked, claims judged against the cited source text with verified quotes | low | 25 s, $0.01 for a 7-claim report |
-| `background "<topic>" [--read 5] [--angles 4] [--max-cost 1.5] [--fresh]` | chained, all at `high`: splits the topic into search angles, scouts each, picks the key papers, reads them in full, writes a brief (closest work, novelty threats, open gaps) where every statement points at evidence ids | high | first run ≈ $0.70, ~120 Google queries, ~10 min (4 scouts in parallel ≈ 3.5 min); same topic again ≈ 4 min, $0.12 (caches) |
+| `scout "<topic>" [--max-papers 10]` | Gemini expands the topic into several Google queries and returns candidate papers; each is checked against arXiv/Crossref/OpenAlex | low | low 30 s USD 0.008 ~8 queries; medium 90 s USD 0.03 ~17 queries |
+| `read <src> [--focus "question"]` | fetches the paper's public full text, Gemini extracts method / optimization / setup / evidence / limitations (+ your focus question), each with a quote checked against the text | medium | 35 s, USD 0.03 |
+| `verify "<claim>" [--source <src>]... [--max-sources 3]` | tests a claim. With `--source`, reads those papers; without, searches for up to 3 sources (incl. ones that might refute) and reads them. Verdict: supported / contradicted / conflicting / insufficient | low | 10 s USD 0.01 with 1 source; 40 s USD 0.03 with search |
+| `compare <src> <src> [...] [--dim "dimension"]...` | 2-6 papers side by side; each cell quote-checked against its own paper | medium | 60 s, USD 0.07 for 3 papers |
+| `audit <report file> [--max-claims 40] [--max-cost 0.5]` | checks a deep-research report (e.g. exported from the Gemini app as .md/.pdf/.txt/.html) against its own cited sources: references checked, claims judged against the cited source text with verified quotes | low | 25 s, USD 0.01 for a 7-claim report |
+| `background "<topic>" [--read 5] [--angles 4] [--max-cost 1.5] [--fresh]` | chained, all at `high`: splits the topic into search angles, scouts each, picks the key papers, reads them in full, writes a brief (closest work, novelty threats, open gaps) where every statement points at evidence ids | high | first run ≈ USD 0.70, ~120 Google queries, ~10 min (4 scouts in parallel ≈ 3.5 min); same topic again ≈ 4 min, USD 0.12 (caches) |
 | `budget` | this month's spend, caps, whether the API key is set | — | free |
 
 `<src>` = arXiv id (`1605.02026`), arXiv URL, DOI, or a public URL (HTML or PDF).
@@ -34,7 +34,7 @@ All take `--effort low|medium|high` (Gemini thinking level).
 
 - `background`: before you write a **research** plan (new experiment design, new direction,
   a paper's contribution/novelty). Not for engineering plans (refactors, scripts, plotting).
-  Tell the user in one line that you are running it and its cap ($1.50 by default), then run it.
+  Tell the user in one line that you are running it and its cap (USD 1.50 by default), then run it.
   Rerunning the same topic within 30 days only searches for new work and reuses read papers.
   Every plan statement that relies on background must point at an evidence id in the brief.
 - `audit`: when the user hands you a deep-research report (Gemini app, etc.) or asks whether one is right.
